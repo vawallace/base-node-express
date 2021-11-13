@@ -1,0 +1,30 @@
+{
+  "name": "base-node-express",
+  "version": "0.0.1",
+  "description": "BoilerPlate Node Express With Authentication",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vawallace/base-node-express.git"
+  },
+  "author": "Aaron Wallace",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/vawallace/base-node-express/issues"
+  },
+  "homepage": "https://github.com/vawallace/base-node-express#readme",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^10.0.0",
+    "express": "^4.17.1",
+    "jsonwebtoken": "^8.5.1",
+    "mongoose": "^6.0.12",
+    "morgan": "^1.10.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.15"
+  }
+}
