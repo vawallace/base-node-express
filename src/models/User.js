@@ -24,5 +24,8 @@ userModel.statics.encryptPassword = async (password) => {
     return await bcrypt.hash(password, salt)
 }
 
+userModel.statics.comparePassword = async (password, receivedPassword) => {
+    return await bcrypt.compare(password, receivedPassword)
+};
 
 module.exports = mongoose.model('User', userModel);
