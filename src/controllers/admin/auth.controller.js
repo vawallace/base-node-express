@@ -1,13 +1,18 @@
-const User = require('../models/User');
+const db = require("../../models/index");
+const User = db.users;
+const encr = require('../../middleware/encrypt')
+const { comparePassword } = require('../../middleware/verify')
 const jwt = require('jsonwebtoken');
 
 exports.signUp = async (req, res) => {
-    const { name, email, password } = req.body;
-    const created = new User({
-        name, email, password: await User.encryptPassword(password)
-    });
+    const { first_name, last_name, email, password } = req.body;
+    const encrypted = encr.encrypt(password);
 
-    const saved = await created.save();
+    const created = {
+        first_name, last_name, email, password: encrypted
+    };
+
+    const saved = await User.create(created);
 
     const access_token = jwt.sign({ id: saved.id }, process.env.JWT_SEC, {
         expiresIn: 86400
@@ -17,8 +22,8 @@ exports.signUp = async (req, res) => {
 }
 
 exports.login = async (req, res) => {
-    const user = await User.findOne({ email: req.body.email });
-    const password = await User.comparePassword(req.body.password, user.password)
+    const user = await User.findOne({ where:{ email: req.body.email }});
+    const password = await comparePassword(req.body.password, user.password)
 
     if(!user || !req.body.password || !password) res.status(401).json({
         message: "The username or password are incorrect. Please try again, or contact the site admin."
