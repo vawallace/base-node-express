@@ -1,7 +1,9 @@
 const jwt = require('jsonwebtoken');
 const encr = require('./encrypt')
+const db = require("../models");
+const User = db.users;
 
-exports.verify = function (req,res,next){
+exports.verify = (req,res,next) => {
     let token;
     
     token = req.cookies.access_token;
@@ -30,26 +32,27 @@ exports.verify = function (req,res,next){
     };
 }
 
-exports.verifyPassword = function (password){
+exports.verifyPassword = (password) => {
     /* set regex to check for 
     - at least 8 characters
     - must contain at least 1 uppercase letter, 1 lowercase letter, and 1 number
     - Can contain special characters
     */ let check = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/;
-
     return check.test(password);
 },
 
-exports.verifyUsername = async function (username){
-    let usernameCheck = /^[A-Za-z0-9 ]+$/
-
-    return usernameCheck.test(username)
+exports.verifyEmail = (email) => {
+    return /\S+@\S+\.\S+/.test(email)
 }
 
-exports.comparePassword = async function (password, user_password){
+exports.checkUnique = async (email) => {
+    let user = await User.findOne({where:{email: email}});
+    return (user == undefined)? false : true;
+    
+}
+
+exports.comparePassword = async (password, user_password) =>{
     let decryptedPassword = encr.decrypt(user_password);
-
     if(decryptedPassword !== password) return false;
-
     return true
 }
