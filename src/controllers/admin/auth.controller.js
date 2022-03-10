@@ -1,24 +1,50 @@
 const db = require("../../models/index");
 const User = db.users;
 const encr = require('../../middleware/encrypt')
-const { comparePassword } = require('../../middleware/verify')
+const { comparePassword, verifyEmail, checkUnique } = require('../../middleware/verify')
 const jwt = require('jsonwebtoken');
 
+const requiredFields = [
+    'first_name',
+    'last_name',
+    'password',
+    'email'
+]
+
 exports.signUp = async (req, res) => {
-    const { first_name, last_name, email, password } = req.body;
-    const encrypted = encr.encrypt(password);
+    let incoming = {first_name: req.body.first_name,last_name: req.body.last_name,email: req.body.email,password: encr.encrypt(req.body.password)};
 
-    const created = {
-        first_name, last_name, email, password: encrypted
-    };
+    if (Object.values(incoming).some(x => x == '')) {
+        res.status(400).send({
+            message: "All fields are required to register a new user."
+        });
+    }
 
-    const saved = await User.create(created);
+    if(!verifyEmail(incoming.email)){
+        res.status(400).send({
+            message: "A valid email format is required."
+        });
+    }
 
-    const access_token = jwt.sign({ id: saved.id }, process.env.JWT_SEC, {
-        expiresIn: 86400
-    })
+    if(await checkUnique(incoming.email) == true){
+        res.status(400).send({
+            message: "A user with that email has already registered."
+        });
+    }
 
-    res.status(200).json({access_token})
+    try {
+        const saved = await User.create(incoming);
+        const access_token = jwt.sign({ id: saved.id }, process.env.JWT_SEC, {
+            expiresIn: 86400
+        })
+
+        res.status(200).json({access_token})
+    } catch (error) {
+        res.status(500).send({
+            message: "There was an error creating the user."
+        });
+    }
+    
 }
 
 exports.login = async (req, res) => {

@@ -1,6 +1,7 @@
 const db = require("../../models");
 const User = db.users;
 const Op = db.Sequelize.Op;
+const encr = require('../../middleware/encrypt')
 
 const requiredFields = [
     'first_name',
@@ -10,24 +11,19 @@ const requiredFields = [
 ]
 
 exports.create = (req, res) => {
-    let incoming = [req.body.first_name,req.body.last_name,req.body.password,req.body.email];
+    let incoming = {first_name: req.body.first_name,last_name:req.body.last_name,password:encr.encrypt(req.body.password),email:req.body.email};
 
-    if (incoming.some( x => x == requiredFields.includes())) {
+    if (Object.values(incoming).some(x => x == '')) {
         res.status(400).send({
             message: "All fields are required to create a new user."
         });
     }
 
-    const user = {
-        first_name: req.body.first_name,
-        last_name: req.body.last_name,
-        email: req.body.email,
-        password: req.body.password,
-    }
-
-    User.create(user)
+    User.create(incoming)
     .then(data => {
-        res.send(data);
+        res.send({
+            message: `The user with id ${data.id} was successfully created`
+        });
     })
     .catch(err => {
         res.status(500).send({
